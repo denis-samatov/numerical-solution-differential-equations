@@ -108,8 +108,9 @@ z0 = -1
 tn = 3
 h = 0.2
 
-n = int((tn - t0) / h)
-t_list = np.arange(t0, tn + h, h)
+# Use whole steps only; the final grid point never exceeds tn.
+n = int(np.floor((tn - t0) / h + 1e-12))
+t_list = t0 + np.arange(n + 1) * h
 z = np.zeros([n+1])
 x = np.zeros([n+1])
 t = np.zeros([n+1])
@@ -118,7 +119,7 @@ x[0] = x0
 t[0] = t0
 
 '''Exact solution of the ODE'''
-ans_rightDecision = [round(val, 2) for val in exact_solution(t_list)]
+ans_rightDecision = exact_solution(t_list)  # retain precision for error measurements
 
 print_info(t_list, ans_rightDecision, name = "Exact solution of the ODE")
 
@@ -141,8 +142,8 @@ x_p = np.zeros([n+1])
 t = np.zeros([n+1])
 z[:4] = z_rungeKuttaMethod[:4]
 z_p[:4] = z_rungeKuttaMethod[:4]
-x[:4] = ans_rightDecision[:4]
-x_p[:4] = ans_rightDecision[:4]
+x[:4] = ans_rungeKuttaMethod[:4]
+x_p[:4] = ans_rungeKuttaMethod[:4]
 t[:4] = t_list[:4]
 
 ans_adamsMoultonMethod = adams_moulton_method(t.copy(), x.copy(), z.copy(), h, n)
