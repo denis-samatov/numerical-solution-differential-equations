@@ -47,7 +47,7 @@ The script visualizes the results using `matplotlib`, generating plots that comp
 The four numerical methods live in [`numerical_methods.py`](numerical_methods.py), separate from the plotting/printing script, so they can be imported and tested on their own:
 
 *   `euler_method()`: Implements the Euler method for solving the ODE.
-*   `modified_euler_method()`: Implements the Modified Euler (Heun's / RK2 predictor-corrector) method.
+*   `modified_euler_method()`: Implements the Modified Euler (explicit midpoint RK2) method.
 *   `runge_kutta_method()`: Implements the fourth-order Runge-Kutta method.
 *   `adams_moulton_method()`: Implements the Adams-Moulton method.
 *   `exact_solution()`: The known closed-form solution to the demonstration ODE.
@@ -88,3 +88,7 @@ The accuracy of the numerical solutions may vary depending on the specific ODE, 
 ## Contributing
 
 Contributions are welcome! If you have any suggestions for improvements or new features, feel free to open an issue or submit a pull request.
+
+## Numerical measurement contract
+
+The exact reference retains full precision until display; error plots do not use rounded values. All four Adams starting points use the computed RK4 x/z values. The method is a single AB4 predictor/AM4 corrector (PECE), not an iteratively solved implicit method. The demonstration uses whole steps: if h does not divide the interval, the last point is before tn. Midpoint RK2 and Heun RK2 are distinct formulas; this example implements midpoint. Tests cover three refinements for PECE and the presentation path. Old image files are historical illustrations, not regenerated measurements.

@@ -1,0 +1,5 @@
+# Tested locally on Python 3.13.5; execution profile, not a cross-platform lock.
+numpy==2.2.6
+matplotlib==3.9.3
+pandas==2.2.2
+pytest==9.2.0

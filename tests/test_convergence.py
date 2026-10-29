@@ -50,14 +50,14 @@ def _adams_moulton_global_error(h):
 
     # Adams-Moulton needs 4 starting points; bootstrap with Runge-Kutta,
     # matching solve_DE.py's own setup.
-    _, z_rk = runge_kutta_method(t.copy(), x.copy(), z.copy(), h, n)
+    x_rk, z_rk = runge_kutta_method(t.copy(), x.copy(), z.copy(), h, n)
     exact = exact_solution(t_list)
 
     t2 = np.zeros(n + 1)
     x2 = np.zeros(n + 1)
     z2 = np.zeros(n + 1)
     t2[:4] = t_list[:4]
-    x2[:4] = exact[:4]
+    x2[:4] = x_rk[:4]
     z2[:4] = z_rk[:4]
 
     x_numeric = adams_moulton_method(t2, x2, z2, h, n)
@@ -99,3 +99,32 @@ def test_adams_moulton_converges_and_outperforms_euler():
 
     euler_error = _global_error(euler_method, h)
     assert error_h < euler_error, "Adams-Moulton should be far more accurate than Euler at the same step size"
+
+
+def test_predictor_corrector_observed_order():
+    # Coarser h=0.05 lies outside the asymptotic regime for this problem.
+    errors = [_adams_moulton_global_error(h) for h in (0.0125, 0.00625, 0.003125)]
+    for coarse, fine in zip(errors, errors[1:]):
+        assert np.log2(coarse / fine) == pytest.approx(4.0, abs=0.3)
+
+
+@pytest.mark.parametrize("method, order", [(euler_method, 1), (modified_euler_method, 2), (runge_kutta_method, 4)])
+def test_second_analytic_initial_value_problem_checks_x_and_z(method, order):
+    # Same documented system, independent initial values and closed-form oracle.
+    # w=x+1/3 has eigenvalues3,-1, so w=c1*exp(3t)+c2*exp(-t).
+    x0, z0, end = 2.0, 0.5, 1.0
+    c1 = (z0 + x0 + 1/3) / 4
+    c2 = (3 * (x0 + 1/3) - z0) / 4
+    errors = []
+    for h in (0.02, 0.01, 0.005):
+        n = round(end / h)
+        times = np.arange(n + 1) * h
+        t, x, z = np.zeros(n + 1), np.zeros(n + 1), np.zeros(n + 1)
+        x[0], z[0] = x0, z0
+        method(t, x, z, h, n)
+        exact_x = c1 * np.exp(3 * times) + c2 * np.exp(-times) - 1/3
+        exact_z = 3 * c1 * np.exp(3 * times) - c2 * np.exp(-times)
+        errors.append((np.max(np.abs(x - exact_x)), np.max(np.abs(z - exact_z))))
+    for coarse, fine in zip(errors, errors[1:]):
+        for coarse_component, fine_component in zip(coarse, fine):
+            assert np.log2(coarse_component / fine_component) == pytest.approx(order, abs=0.3)

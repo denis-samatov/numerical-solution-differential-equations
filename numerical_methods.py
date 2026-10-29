@@ -29,7 +29,7 @@ def euler_method(t, x, z, h, n):
 
 
 def modified_euler_method(t, x, z, h, n):
-    """Solves the ODE using the Modified Euler (Heun's / RK2 predictor-corrector) method.
+    """Solves the ODE using the Modified Euler (explicit midpoint RK2) method.
 
     For the coupled system x' = z, z' = f(x, z), the midpoint estimate for
     each variable must be offset using the *other* variable's own
@@ -89,7 +89,7 @@ def runge_kutta_method(t, x, z, h, n):
 
 
 def adams_moulton_method(t, x, z, h, n):
-    """Solves the ODE using the Adams-Moulton method.
+    """Solves the ODE using one AB4 predictor / AM4 corrector (PECE) step.
 
     The first 4 points (indices 0-3) must already be filled in by the caller
     (typically with Runge-Kutta) before calling this, since the method needs
